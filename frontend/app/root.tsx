@@ -6,9 +6,17 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { AuthProvider } from "./contexts/AuthContext";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/sonner"
+
+const queryClient = new QueryClient();
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -33,9 +41,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>{children}</AuthProvider>
+          <Toaster />
+          <ScrollRestoration />
+          <Scripts />
+        </QueryClientProvider>
       </body>
     </html>
   );
