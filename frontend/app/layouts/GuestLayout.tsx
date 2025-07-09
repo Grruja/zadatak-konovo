@@ -12,7 +12,7 @@ export default function GuestLayout() {
     }
   }, [isLoading, isAuthenticated, navigate]);
 
-  if (isLoading) {
+  if (isLoading && isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div>Loading...</div>

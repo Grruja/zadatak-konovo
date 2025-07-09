@@ -60,7 +60,7 @@ composer install
 #### Test Backend
 - Start your local server (XAMPP, Apache, etc.)
 - Navigate to `http://localhost/zadatak-konovo/backend/`
-- You should see a JSON response indicating the API is working
+- You should see a JSON response like {"message":"Not Found"} indicating the API is working
 
 ### 3. Frontend Setup
 

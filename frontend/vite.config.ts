@@ -8,6 +8,8 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
   server: {
+    port: 5173,
+    host: true,
     proxy: {
       '/api': {
         target: 'http://localhost/zadatak-konovo/backend',
@@ -24,5 +26,8 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./app"),
     },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router'],
   },
 });
