@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Package, Tag, Building } from "lucide-react";
+import { formatPrice, containsHtml } from "@/helpers/text.helper";
 
 interface Product {
   id: string;
@@ -21,11 +22,6 @@ export function ProductDetailsContent({ product }: ProductDetailsContentProps) {
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const target = e.target as HTMLImageElement;
     target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='%236b7280' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";
-  };
-
-  const containsHtml = (text: string): boolean => {
-    const htmlRegex = /<[^>]*>/; // Checks for HTML tags like <tags> or <tag />
-    return htmlRegex.test(text);
   };
 
   const renderDescription = (description: string) => {
@@ -68,7 +64,7 @@ export function ProductDetailsContent({ product }: ProductDetailsContentProps) {
             {product.name}
           </h1>
           <div className="text-3xl font-bold text-primary mb-4">
-            {product.price.toFixed(2)} <span className="text-sm text-gray-500">RSD</span>
+            {formatPrice(product.price)} <span className="text-sm text-gray-500">RSD</span>
           </div>
         </div>
 

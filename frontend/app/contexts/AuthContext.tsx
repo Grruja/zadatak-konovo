@@ -18,7 +18,7 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleSessionExpiration = useCallback(() => {
     localStorage.removeItem('token');
@@ -38,6 +38,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     } catch (error) {
       console.error('Failed to read token from localStorage', error);
       localStorage.removeItem('token');
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 

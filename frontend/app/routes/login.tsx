@@ -29,7 +29,7 @@ interface FormErrors {
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isLoading } = useAuth();
   const [formData, setFormData] = useState({
     username: 'zadatak',
     password: 'zadatak',
@@ -70,6 +70,18 @@ export default function LoginPage() {
 
     mutation.mutate(formData);
   };
+
+  // Don't render the form while auth context is loading to prevent hydration mismatch
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
+          <div>Loading...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">

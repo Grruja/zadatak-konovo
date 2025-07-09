@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { formatPrice } from "@/helpers/text.helper";
 import api from "@/config/axios.config";
 
 interface Product {
@@ -32,8 +33,8 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
         const { data } = await api.get(`/products/${product.id}`);
         return data;
       },
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
     });
   };
 
@@ -69,7 +70,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
         </CardContent>
         <CardFooter>
           <p className="text-xl font-bold text-primary">
-            {product.price.toFixed(2)} <span className="text-sm text-gray-500">RSD</span>
+            {formatPrice(product.price)} <span className="text-sm text-gray-500">RSD</span>
           </p>
         </CardFooter>
       </Card>
