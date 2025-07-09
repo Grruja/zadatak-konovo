@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate, Link } from 'react-router';
+import { useNavigate } from 'react-router';
 import { useAuth } from '@/contexts/AuthContext';
-import api from '@/config/axios.config';
 import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -17,57 +15,41 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { type AxiosError, type AxiosResponse } from 'axios';
 import { validateLogin } from '../validations/auth.validation';
-
-interface AuthData {
-  user: {
-    id: number;
-    name: string;
-    email: string;
-  };
-  authorization: {
-    token: string;
-    type: string;
-  };
-}
+import axios from 'axios';
 
 interface LoginSuccessResponse {
-  message: string;
-  data: AuthData;
+  token: string;
 }
 
 interface FormErrors {
-  email?: string;
+  username?: string;
   password?: string;
+  general?: string;
 }
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    username: 'zadatak',
+    password: 'zadatak',
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
   const mutation = useMutation<
     AxiosResponse<LoginSuccessResponse>,
-    AxiosError<{ message: string; errors?: FormErrors }>,
+    AxiosError,
     typeof formData
   >({
-    mutationFn: (userCredentials) => api.post('/login', userCredentials),
+    mutationFn: (userCredentials) =>
+      axios.post('/konovo-api/login', userCredentials),
     onSuccess: (response) => {
-      const { token } = response.data.data.authorization;
-      const user = response.data.data.user;
-      login(token, user);
-      navigate('/dashboard');
+      const { token } = response.data;
+      login(token);
+      navigate('/products');
     },
     onError: (error) => {
-      const errorData = error.response?.data;
-      if (errorData?.errors) {
-        setErrors(errorData.errors);
-      } else {
-        toast.error(errorData?.message || 'Login failed. Please check your credentials.');
-      }
+      toast.error('Login failed. Please check your credentials.');
     },
   });
 
@@ -95,22 +77,22 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account.
+            Enter your credentials below to login.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="john@example.com"
-                value={formData.email}
+                id="username"
+                type="text"
+                placeholder="zadatak"
+                value={formData.username}
                 onChange={handleChange}
                 required
               />
-              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+              {errors.username && <p className="text-sm text-destructive">{errors.username}</p>}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
@@ -128,12 +110,6 @@ export default function LoginPage() {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="text-center text-sm">
-          Don&apos;t have an account?{' '}
-          <Link to="/register" className="underline">
-            Sign up
-          </Link>
-        </CardFooter>
       </Card>
     </div>
   );

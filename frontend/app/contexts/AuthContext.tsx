@@ -1,18 +1,11 @@
 import { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from 'react';
-import { jwtDecode } from 'jwt-decode';
-import api from '../config/axios.config';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
+import { toast } from 'sonner';
 
 interface AuthContextType {
-  user: User | null;
   token: string | null;
-  login: (token: string, user: User) => void;
+  login: (token: string) => void;
   logout: () => void;
+  handleSessionExpiration: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -24,98 +17,62 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const handleSessionExpiration = useCallback(() => {
+    localStorage.removeItem('token');
+    setToken(null);
+    
+    toast.error("Session expired. Please log in again.", {
+      duration: 5000,
+    });
+  }, []);
 
   useEffect(() => {
     try {
       const storedToken = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-
-      if (storedToken && storedUser) {
+      if (storedToken) {
         setToken(storedToken);
-        setUser(JSON.parse(storedUser));
       }
     } catch (error) {
-      console.error('Failed to parse user data from localStorage', error);
+      console.error('Failed to read token from localStorage', error);
       localStorage.removeItem('token');
-      localStorage.removeItem('user');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const login = useCallback((newToken: string, newUser: User) => {
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(newUser));
-    setToken(newToken);
-    setUser(newUser);
-  }, []);
-
-  const logout = useCallback(async () => {
-    try {
-      await api.post('/logout');
-    } catch (error) {
-      console.error('Server logout failed', error);
-    } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setToken(null);
-      setUser(null);
-    }
-  }, []);
-
+  // Listen for session expiration events from axios interceptor
   useEffect(() => {
-    if (!token) {
-      return;
-    }
-
-    const refreshToken = async () => {
-      try {
-        const response = await api.post('/refresh');
-        const data = response.data;
-        
-        if (!data) {
-          logout();
-          return;
-        }
-
-        const newToken = data.data.authorization.token;
-        const refreshedUser = data.data.user;
-
-        login(newToken, refreshedUser);
-      } catch (error) {
-        console.error('Token refresh failed:', error);
-        logout();
-      }
+    const handleSessionExpiredEvent = () => {
+      handleSessionExpiration();
     };
 
-    try {
-      const decodedToken = jwtDecode<{ exp: number }>(token);
-      const expirationTime = decodedToken.exp * 1000;
-      
-      const refreshTimeout = expirationTime - Date.now() - 60000; // Refresh 1 minute before expiration
+    window.addEventListener('sessionExpired', handleSessionExpiredEvent);
 
-      if (refreshTimeout > 0) {
-        const timeoutId = setTimeout(refreshToken, refreshTimeout);
-        return () => clearTimeout(timeoutId);
-      } else {
-        logout();
-      }
-    } catch (error) {
-      console.error('Invalid token:', error);
-      logout();
-    }
-  }, [token, login, logout]);
+    return () => {
+      window.removeEventListener('sessionExpired', handleSessionExpiredEvent);
+    };
+  }, [handleSessionExpiration]);
+
+  const login = useCallback((newToken: string) => {
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    setToken(null);
+  }, []);
 
   const isAuthenticated = !!token;
 
   const value = {
-    user,
     token,
     login,
     logout,
+    handleSessionExpiration,
     isAuthenticated,
     isLoading,
   };

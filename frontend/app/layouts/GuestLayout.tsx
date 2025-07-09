@@ -8,7 +8,7 @@ export default function GuestLayout() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate('/dashboard');
+      navigate('/products');
     }
   }, [isLoading, isAuthenticated, navigate]);
 
